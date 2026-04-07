@@ -1,18 +1,60 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Image as ImageIcon, Camera, CheckCircle2, Loader2 } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { ArrowLeft, Image as ImageIcon, Camera, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { analyzeReceipt } from '../lib/ocrService';
 
 const DiagnosisUpload = () => {
   const navigate = useNavigate();
   const [isUploading, setIsUploading] = useState(false);
+  const [errorObj, setErrorObj] = useState(null);
+  const fileInputRef = useRef(null);
 
-  const simulateUpload = () => {
-    setIsUploading(true);
-    // Simulate OCR processing time
-    setTimeout(() => {
+  const handleDivClick = () => {
+    // divがクリックされたら、隠してある実際のファイルinputをクリックさせる
+    if (fileInputRef.current && !isUploading) {
+      setErrorObj(null);
+      fileInputRef.current.click();
+    }
+  };
+
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      setIsUploading(true);
+      setErrorObj(null);
+
+      // 画像をBase64に変換してAIへ送信
+      const base64Image = await fileToBase64(file);
+      const analysisData = await analyzeReceipt(base64Image);
+
+      // 読み取ったデータを持って結果画面へ遷移
+      navigate('/result', {
+        state: {
+          inputData: {
+            area: analysisData.area,
+            usage: analysisData.usage,
+            baseCharge: analysisData.baseCharge,
+            unitPrice: analysisData.unitPrice
+          }
+        }
+      });
+    } catch (err) {
+      console.error(err);
+      setErrorObj("画像の解析に失敗しました。もう一度はっきりと撮影するか、手動入力画面をお試しください。");
+    } finally {
       setIsUploading(false);
-      navigate('/result');
-    }, 2000);
+    }
   };
 
   return (
@@ -27,13 +69,19 @@ const DiagnosisUpload = () => {
       </header>
 
       <main className="w-full max-w-md flex-1 flex flex-col px-4 pt-6 pb-20 animate-in fade-in slide-in-from-right-4 duration-300">
+        {errorObj && (
+          <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-4 text-sm flex gap-2 items-start border border-red-100">
+            <AlertCircle className="shrink-0 mt-0.5" size={18} />
+            <p>{errorObj}</p>
+          </div>
+        )}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 mb-6 text-center">
           <h2 className="font-bold text-slate-800 mb-2">請求書全体が写るように撮影してください</h2>
           <p className="text-sm text-slate-500 mb-6">金額と使用量がはっきり見えると正確に診断できます。</p>
 
           <div 
             className={`w-full aspect-[4/3] bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl flex border-primary/50 flex-col items-center justify-center gap-3 cursor-pointer hover:bg-sky-50 transition relative ${isUploading ? 'pointer-events-none opacity-80' : ''}`}
-            onClick={simulateUpload}
+            onClick={handleDivClick}
           >
             {isUploading ? (
               <div className="flex flex-col items-center gap-3 text-primary animate-in zoom-in duration-300">
@@ -55,7 +103,14 @@ const DiagnosisUpload = () => {
               </>
             )}
             
-            <input type="file" accept="image/*" capture="environment" className="hidden" />
+            <input 
+              ref={fileInputRef}
+              type="file" 
+              accept="image/*" 
+              capture="environment" 
+              className="hidden" 
+              onChange={handleFileChange}
+            />
           </div>
         </div>
 
