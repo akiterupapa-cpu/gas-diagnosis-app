@@ -1,34 +1,60 @@
 import React from 'react';
 import { Flame, ArrowRight, CheckCircle2, ShieldCheck, Camera, Edit3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 const LandingPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white flex flex-col items-center">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="min-h-screen bg-gradient-to-b from-sky-50 to-white flex flex-col items-center"
+    >
       {/* Header */}
-      <header className="w-full max-w-md p-4 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-10 border-b border-sky-100">
-        <div className="flex items-center gap-2 text-primary-dark font-bold text-xl">
+      <header className="w-full max-w-md p-4 flex justify-center items-center bg-white/80 backdrop-blur-md sticky top-0 z-10 border-b border-sky-100">
+        <motion.div 
+          initial={{ y: -10, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="flex items-center gap-2 text-primary-dark font-bold text-xl"
+        >
           <Flame className="text-primary" size={24} fill="currentColor" />
           <span>ガス代診断プロ</span>
-        </div>
+        </motion.div>
       </header>
 
       {/* Main Content */}
       <main className="w-full max-w-md flex-1 flex flex-col items-center px-4 pt-8 pb-20">
         
         {/* Hero Section */}
-        <div className="text-center mb-10 w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <h1 className="text-3xl font-extrabold text-slate-800 leading-tight mb-4">
+        <div className="text-center mb-10 w-full">
+          <motion.h1 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+            className="text-3xl font-extrabold text-slate-800 leading-tight mb-4"
+          >
             あなたのガス代、<br/>
             <span className="text-red-500 bg-red-50 px-2 rounded-md">高すぎない？</span>
-          </h1>
-          <p className="text-slate-600 mb-8 font-medium">
+          </motion.h1>
+          <motion.p 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+            className="text-slate-600 mb-8 font-medium"
+          >
             スマホでカンタン、10秒でわかる。<br/>毎月の無駄なガス代を無料診断。
-          </p>
+          </motion.p>
 
-          <div className="bg-white p-5 rounded-2xl shadow-xl shadow-sky-100/50 border border-sky-50">
+          <motion.div 
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.7, duration: 0.8 }}
+            className="bg-white p-5 rounded-2xl shadow-xl shadow-sky-100/50 border border-sky-50"
+          >
             <h2 className="text-lg font-bold text-center mb-4 text-slate-700 flex justify-center items-center gap-2">
               <ShieldCheck className="text-green-500" size={20} />
               使い方はとっても簡単！
@@ -44,7 +70,7 @@ const LandingPage = () => {
               </li>
               <li className="flex items-center gap-3 text-slate-600">
                 <CheckCircle2 className="text-primary shrink-0" size={18} />
-                <span>完全無料で何度でも使える</span>
+                <span>完全無料で診断可能</span>
               </li>
             </ul>
             
@@ -57,10 +83,10 @@ const LandingPage = () => {
             <p className="text-xs text-slate-400 mt-3 text-center">
               ※診断結果からそのまま最適な会社へ切り替え可能です
             </p>
-          </div>
+          </motion.div>
         </div>
       </main>
-    </div>
+    </motion.div>
   );
 };
 

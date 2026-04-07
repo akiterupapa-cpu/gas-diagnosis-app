@@ -19,6 +19,10 @@ export const calculateSavings = (area, usage, currentBaseCharge, currentUnitPric
   const isOptimal = yearlySavings <= 0; 
 
   return {
+    area,
+    usage,
+    currentBaseCharge,
+    currentUnitPrice,
     isOptimal,
     yearlySavings: Math.max(0, Math.floor(yearlySavings)),
     currentMonthlyTotal: Math.floor(currentMonthlyTotal),

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { ArrowLeft, MapPin, Activity, DollarSign, Zap } from 'lucide-react';
+import { ArrowLeft, MapPin, Activity, DollarSign, Zap, Calculator, HelpCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 const DiagnosisManual = () => {
   const navigate = useNavigate();
@@ -30,26 +31,49 @@ const DiagnosisManual = () => {
     });
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut" } }
+  };
+
+  const inputClass = "w-full bg-white border border-slate-200 rounded-2xl px-5 py-4 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition shadow-sm text-slate-700 font-medium placeholder:text-slate-300";
+  const labelClass = "text-xs font-black text-slate-400 flex items-center gap-2 mb-2 ml-1 uppercase tracking-widest";
+
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center">
-      <header className="w-full max-w-md p-4 flex items-center bg-white sticky top-0 z-10 border-b border-slate-100 shadow-sm">
+    <motion.div 
+      initial="hidden"
+      animate="visible"
+      exit={{ opacity: 0 }}
+      variants={containerVariants}
+      className="min-h-screen bg-slate-50 flex flex-col items-center"
+    >
+      <header className="w-full max-w-md p-4 flex items-center bg-white sticky top-0 z-10 border-b border-slate-100">
         <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-slate-400 hover:text-slate-600 rounded-full transition">
           <ArrowLeft size={24} />
         </button>
-        <div className="flex-1 text-center font-bold text-slate-700 mr-8">
+        <div className="flex-1 text-center font-bold text-slate-700 mr-8 uppercase tracking-tight">
           手動入力で診断
         </div>
       </header>
 
-      <main className="w-full max-w-md flex-1 px-4 pt-6 pb-24 animate-in fade-in slide-in-from-right-4 duration-300">
-        <div className="text-slate-600 text-sm mb-6 bg-white p-4 rounded-xl border border-slate-100 shadow-sm leading-relaxed">
-          お手元の請求書（検針票）を確認しながら、以下の4項目をご入力ください。
-        </div>
+      <main className="w-full max-w-md flex-1 px-4 pt-6 pb-24">
+        <motion.div variants={itemVariants} className="text-slate-500 text-xs font-bold mb-8 bg-primary/5 p-5 rounded-2xl border border-primary/10 leading-relaxed flex gap-3">
+          <HelpCircle size={20} className="shrink-0 text-primary" />
+          <p>お手元の請求書（検針票）を確認しながら、以下の4項目をご入力ください。正確な診断が可能になります。</p>
+        </motion.div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="space-y-1.5">
-            <label className="text-sm font-bold text-slate-700 flex items-center gap-1.5 mb-1">
-              <MapPin size={16} className="text-primary" /> お住まいのエリア (都道府県・市町村)
+        <form onSubmit={handleSubmit} className="space-y-7">
+          <motion.div variants={itemVariants}>
+            <label className={labelClass}>
+              <MapPin size={14} /> お住まいのエリア
             </label>
             <input 
               type="text"
@@ -58,78 +82,82 @@ const DiagnosisManual = () => {
               onChange={handleChange}
               placeholder="例：東京都世田谷区"
               required
-              className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition shadow-sm text-[16px]"
+              className={inputClass}
             />
-          </div>
+          </motion.div>
 
-          <div className="space-y-1.5">
-            <label className="text-sm font-bold text-slate-700 flex items-center gap-1.5 mb-1">
-              <Activity size={16} className="text-emerald-500" /> 今月の使用量
+          <motion.div variants={itemVariants}>
+            <label className={labelClass}>
+              <Activity size={14} /> 今月の使用量
             </label>
             <div className="relative">
               <input 
                 type="number"
                 name="usage"
                 inputMode="decimal"
+                step="0.1"
                 value={formData.usage}
                 onChange={handleChange}
                 placeholder="例：15.5"
                 required
-                className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3.5 pr-12 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition shadow-sm text-[16px]"
+                className={inputClass}
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">m³</span>
+              <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 font-black">m³</span>
             </div>
+          </motion.div>
+
+          <div className="grid grid-cols-2 gap-5">
+            <motion.div variants={itemVariants}>
+              <label className={labelClass}>
+                <DollarSign size={14} /> 基本料金
+              </label>
+              <div className="relative">
+                <input 
+                  type="number"
+                  name="baseCharge"
+                  inputMode="numeric"
+                  value={formData.baseCharge}
+                  onChange={handleChange}
+                  placeholder="1500"
+                  required
+                  className={inputClass}
+                />
+                <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 font-black">円</span>
+              </div>
+            </motion.div>
+
+            <motion.div variants={itemVariants}>
+              <label className={labelClass}>
+                <Zap size={14} /> 従量単価
+              </label>
+              <div className="relative">
+                <input 
+                  type="number"
+                  name="unitPrice"
+                  inputMode="decimal"
+                  step="0.1"
+                  value={formData.unitPrice}
+                  onChange={handleChange}
+                  placeholder="450"
+                  required
+                  className={inputClass}
+                />
+                <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 font-black">円</span>
+              </div>
+            </motion.div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-sm font-bold text-slate-700 flex items-center gap-1.5 mb-1">
-              <DollarSign size={16} className="text-amber-500" /> 基本料金
-            </label>
-            <div className="relative">
-              <input 
-                type="number"
-                name="baseCharge"
-                inputMode="numeric"
-                value={formData.baseCharge}
-                onChange={handleChange}
-                placeholder="例：1500"
-                required
-                className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3.5 pr-12 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition shadow-sm text-[16px]"
-              />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">円</span>
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-sm font-bold text-slate-700 flex items-center gap-1.5 mb-1">
-              <Zap size={16} className="text-purple-500" /> 従量単価
-            </label>
-            <div className="relative">
-              <input 
-                type="number"
-                name="unitPrice"
-                inputMode="decimal"
-                value={formData.unitPrice}
-                onChange={handleChange}
-                placeholder="例：180.5"
-                required
-                className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3.5 pr-16 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition shadow-sm text-[16px]"
-              />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">円/m³</span>
-            </div>
-          </div>
-
-          <div className="pt-4">
+          <motion.div variants={itemVariants} className="pt-6">
             <button 
               type="submit"
-              className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary-dark text-white font-bold text-lg py-4 rounded-xl shadow-lg shadow-primary/30 transform transition active:scale-95"
+              className="w-full bg-gradient-to-r from-slate-800 to-slate-900 hover:brightness-110 text-white font-black text-lg py-5 rounded-3xl shadow-xl shadow-slate-200 transform transition active:scale-95 flex items-center justify-center gap-3"
             >
-              診断結果を見る
+              診断を開始する <Calculator size={22} />
             </button>
-          </div>
+          </motion.div>
         </form>
       </main>
-    </div>
+    </motion.div>
   );
 };
 

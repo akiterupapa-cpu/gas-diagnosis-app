@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { ArrowLeft, Image as ImageIcon, Camera, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { analyzeReceipt } from '../lib/ocrService';
 
 const DiagnosisUpload = () => {
@@ -10,7 +11,6 @@ const DiagnosisUpload = () => {
   const fileInputRef = useRef(null);
 
   const handleDivClick = () => {
-    // divがクリックされたら、隠してある実際のファイルinputをクリックさせる
     if (fileInputRef.current && !isUploading) {
       setErrorObj(null);
       fileInputRef.current.click();
@@ -34,11 +34,9 @@ const DiagnosisUpload = () => {
       setIsUploading(true);
       setErrorObj(null);
 
-      // 画像をBase64に変換してAIへ送信
       const base64Image = await fileToBase64(file);
       const analysisData = await analyzeReceipt(base64Image);
 
-      // 読み取ったデータを持って結果画面へ遷移
       navigate('/result', {
         state: {
           inputData: {
@@ -57,51 +55,89 @@ const DiagnosisUpload = () => {
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center">
+    <motion.div 
+      initial="hidden"
+      animate="visible"
+      exit={{ opacity: 0 }}
+      variants={containerVariants}
+      className="min-h-screen bg-slate-50 flex flex-col items-center"
+    >
       <header className="w-full max-w-md p-4 flex items-center bg-white sticky top-0 z-10 border-b border-slate-100">
         <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-slate-400 hover:text-slate-600 rounded-full transition">
           <ArrowLeft size={24} />
         </button>
-        <div className="flex-1 text-center font-bold text-slate-700 mr-8">
+        <div className="flex-1 text-center font-bold text-slate-700 mr-8 uppercase tracking-tight">
           画像のアップロード
         </div>
       </header>
 
-      <main className="w-full max-w-md flex-1 flex flex-col px-4 pt-6 pb-20 animate-in fade-in slide-in-from-right-4 duration-300">
-        {errorObj && (
-          <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-4 text-sm flex gap-2 items-start border border-red-100">
-            <AlertCircle className="shrink-0 mt-0.5" size={18} />
-            <p>{errorObj}</p>
-          </div>
-        )}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 mb-6 text-center">
-          <h2 className="font-bold text-slate-800 mb-2">請求書全体が写るように撮影してください</h2>
-          <p className="text-sm text-slate-500 mb-6">金額と使用量がはっきり見えると正確に診断できます。</p>
+      <main className="w-full max-w-md flex-1 flex flex-col px-4 pt-6 pb-20">
+        <AnimatePresence>
+          {errorObj && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="bg-red-50 text-red-600 p-4 rounded-2xl mb-4 text-xs font-bold flex gap-2 items-start border border-red-100"
+            >
+              <AlertCircle className="shrink-0 mt-0.5" size={18} />
+              <p>{errorObj}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <motion.div 
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 mb-6 text-center"
+        >
+          <h2 className="font-bold text-slate-800 mb-2 tracking-tight">請求書全体が写るように撮影してください</h2>
+          <p className="text-xs text-slate-500 mb-8 font-medium">金額と使用量がはっきり見えると正確に診断できます。</p>
 
           <div 
-            className={`w-full aspect-[4/3] bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl flex border-primary/50 flex-col items-center justify-center gap-3 cursor-pointer hover:bg-sky-50 transition relative ${isUploading ? 'pointer-events-none opacity-80' : ''}`}
+            className={`w-full aspect-[4/3] bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-sky-50 hover:border-primary/30 transition-all relative overflow-hidden ${isUploading ? 'pointer-events-none' : ''}`}
             onClick={handleDivClick}
           >
-            {isUploading ? (
-              <div className="flex flex-col items-center gap-3 text-primary animate-in zoom-in duration-300">
-                <Loader2 size={40} className="animate-spin text-primary" />
-                <span className="font-bold animate-pulse text-lg mt-2">文字を解析中...</span>
-              </div>
-            ) : (
-              <>
-                <div className="flex gap-4 text-slate-400">
-                  <Camera size={42} />
-                  <ImageIcon size={42} />
-                </div>
-                <div className="text-slate-600 font-bold text-lg">
-                  タップしてカメラ起動
-                </div>
-                <div className="text-sm text-slate-400">
-                  または写真フォルダから選択
-                </div>
-              </>
-            )}
+            <AnimatePresence mode="wait">
+              {isUploading ? (
+                <motion.div 
+                  key="loading"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex flex-col items-center gap-4 text-primary"
+                >
+                  <Loader2 size={48} className="animate-spin" />
+                  <span className="font-black animate-pulse text-lg tracking-widest uppercase">解析中...</span>
+                </motion.div>
+              ) : (
+                <motion.div 
+                  key="idle"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex flex-col items-center"
+                >
+                  <div className="flex gap-4 text-slate-300 mb-4">
+                    <Camera size={48} />
+                    <ImageIcon size={48} />
+                  </div>
+                  <div className="text-slate-700 font-black text-xl mb-1">
+                    タップしてカメラ起動
+                  </div>
+                  <div className="text-xs text-slate-400 font-bold uppercase tracking-wider">
+                    または写真フォルダから選択
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
             
             <input 
               ref={fileInputRef}
@@ -112,14 +148,19 @@ const DiagnosisUpload = () => {
               onChange={handleFileChange}
             />
           </div>
-        </div>
+        </motion.div>
 
-        <div className="bg-sky-50 rounded-xl p-4 text-sm text-slate-600 flex gap-3 items-start border border-sky-100">
-          <CheckCircle2 className="text-primary shrink-0 mt-0.5" size={18} />
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="bg-sky-50 rounded-2xl p-5 text-xs text-slate-600 font-bold flex gap-4 items-start border border-sky-100 leading-relaxed"
+        >
+          <CheckCircle2 className="text-primary shrink-0 mt-0.5" size={20} />
           <p>読み取った画像データは診断の計算のみに使用され、保存・送信されることはありませんのでご安心ください。</p>
-        </div>
+        </motion.div>
       </main>
-    </div>
+    </motion.div>
   );
 };
 
